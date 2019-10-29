@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "electron": "^7.0.0",
+    "electron-main-notification": "^1.0.1",
     "socket.io": "^2.3.0"
   },
   "devDependencies": {},

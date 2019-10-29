@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>WebSocket Chat</h1>
+    <fieldset id="storage"></fieldset>
+    <input type="text" name="chat-text" id="chat-text">
+    <input type="button" value="Send" onclick="socket.send(document.getElementById('chat-text').value)">
+    <script>
+      const socket = new WebSocket("ws://localhost:1040/app");
+      socket.onmessage = function(event) {
+          console.log(event);
+          var data = event.data;
+          document.getElementById("storage").innerHTML = data;
+      }
+    </script>
+  </body>
+</html>

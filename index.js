@@ -1,48 +1,42 @@
-const electron = require('electron');
-var io = require('socket.io').listen(8080); 
+const path = require("path")
+const {
+  app,
+  BrowserWindow,
+  dialog,
+} = require('electron')
+const WebSocket = require("ws")
+const notify = require('electron-main-notification')
 
-const app = electron.app;
-const BrowserWindow = electron.BrowserWindow;
+const ws = new WebSocket('ws://localhost:1040/app')
 
-var mainWindow = null;
+let win
 
+function main() {
+    win = new BrowserWindow({
+        width: 960,
+        height: 600,
+        title:"WebSocket Demo"
+    })
 
-app.on('window-all-closed', function() {
-  if (process.platform != 'darwin') {
-    app.quit();
-  }
-});
+    win.loadURL(path.join(__dirname, 'index.html'))
+    win.on('closed', () => { win = null })
 
-app.on('ready', function() {
-  mainWindow = new BrowserWindow({width: 400, height: 600});
-  mainWindow.loadURL('file://' + __dirname + '/web/index.html');
-  
-  io.set('log level', 1);
-  // Навешиваем обработчик на подключение нового клиента
-  io.sockets.on('connection', function (socket) {
-    // Т.к. чат простой - в качестве ников пока используем первые 5 символов от ID сокета
-    var ID = (socket.id).toString().substr(0, 5);
-    var time = (new Date).toLocaleTimeString();
-    // Посылаем клиенту сообщение о том, что он успешно подключился и его имя
-    socket.json.send({'event': 'connected', 'name': ID, 'time': time});
-    // Посылаем всем остальным пользователям, что подключился новый клиент и его имя
-    socket.broadcast.json.send({'event': 'userJoined', 'name': ID, 'time': time});
-    // Навешиваем обработчик на входящее сообщение
-    socket.on('message', function (msg) {
-      var time = (new Date).toLocaleTimeString();
-      // Уведомляем клиента, что его сообщение успешно дошло до сервера
-      socket.json.send({'event': 'messageSent', 'name': ID, 'text': msg, 'time': time});
-      // Отсылаем сообщение остальным участникам чата
-      socket.broadcast.json.send({'event': 'messageReceived', 'name': ID, 'text': msg, 'time': time})
+    ws.on('message', function incoming(body) {
+      notify(
+        'Got new message！',
+        {body},
+        () => {
+          console.log('The notification got clicked on!')
+        }
+      )
     });
-    // При отключении клиента - уведомляем остальных
-    socket.on('disconnect', function() {
-      var time = (new Date).toLocaleTimeString();
-      io.sockets.json.send({'event': 'userSplit', 'name': ID, 'time': time});
-    });
-  }); 
-  
-  mainWindow.on('closed', function() {
-    mainWindow = null;
-  });
-});
+}
+
+app.on('ready', main)
+app.on('window-all-closed', () => {
+    app.quit()
+    process.exit(1)
+})
+app.on('quit', function () {
+    console.log("Done.")
+})
