@@ -1,0 +1,16 @@
+{
+  "name": "websocket_chat",
+  "version": "0.0.1",
+  "description": "Chat on websocket",
+  "main": "index.js",
+  "dependencies": {
+    "electron": "^7.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Tarangok",
+  "license": "MIT",
+  "repository": "https://github.com/Tarangok/websocket_chat"
+}
